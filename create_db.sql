@@ -1,8 +1,8 @@
 # Create database script for Berties books
 
 # Create the database
-CREATE DATABASE IF NOT EXISTS berties_books;
-USE berties_books;
+CREATE DATABASE IF NOT EXISTS myBookshop;
+USE myBookshop;
 
 # Create the tables
 CREATE TABLE IF NOT EXISTS books (
@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS books (
     PRIMARY KEY(id));
 
 CREATE USER IF NOT EXISTS 'berties_books_app'@'localhost' IDENTIFIED BY 'qwertyuiop'; 
-GRANT ALL PRIVILEGES ON berties_books.* TO ' berties_books_app'@'localhost';
+GRANT ALL PRIVILEGES ON myBookshop.* TO 'berties_books_app'@'localhost';
