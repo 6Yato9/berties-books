@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bargain Book List</title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <header>
+      <h1><%= shopData.shopName %> Shop</h1>
+    </header>
+
+    <main>
+      <h2>Here are the books that we sell below £20:</h2>
+      <ul>
+        <% bargainBooks.forEach(function(book) { %>
+        <li class="book-item">
+          <strong><%= book.name %></strong>, £<%= Number(book.price).toFixed(2)
+          %>
+        </li>
+        <% }); %>
+      </ul>
+    </main>
+  </body>
+</html>
