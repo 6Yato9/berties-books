@@ -11,14 +11,37 @@ router.get("/search-result", function (req, res, next) {
   res.send("You searched for: " + req.query.keyword);
 });
 
-router.get("/list", function (req, res, next) {
+app.get("/list", function (req, res, next) {
   let sqlquery = "SELECT * FROM books"; // query database to get all the books
-  // execute sql query
+
+  // Execute SQL query
   db.query(sqlquery, (err, result) => {
     if (err) {
       next(err);
     }
-    res.send(result);
+    res.render("list.ejs", {
+      availableBooks: result,
+      shopData: shopData,
+    });
+  });
+});
+// Route to render addbook.ejs
+app.get("/books/addbook", function (req, res) {
+  res.render("addbook.ejs", shopData);
+});
+
+app.get("/books/bargainbooks", function (req, res) {
+  let sqlquery = "SELECT * FROM books WHERE price<20"; // query database to get all the books
+
+  // Execute SQL query
+  db.query(sqlquery, (err, result) => {
+    if (err) {
+      next(err);
+    }
+    res.render("bargainlist.ejs", {
+      bargainBooks: result,
+      shopData: shopData,
+    });
   });
 });
 

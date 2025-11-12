@@ -40,24 +40,7 @@ module.exports = function (app, shopData) {
     );
   });
   // Route to render list.ejs
-  app.get("/list", function (req, res, next) {
-    let sqlquery = "SELECT * FROM books"; // query database to get all the books
 
-    // Execute SQL query
-    db.query(sqlquery, (err, result) => {
-      if (err) {
-        next(err);
-      }
-      res.render("list.ejs", {
-        availableBooks: result,
-        shopData: shopData,
-      });
-    });
-  });
-  // Route to render addbook.ejs
-  app.get("/books/addbook", function (req, res) {
-    res.render("addbook.ejs", shopData);
-  });
   // Route to handle form submission for adding a new book to the database
   app.post("/bookadded", function (req, res, next) {
     // Saving data in database
@@ -81,18 +64,4 @@ module.exports = function (app, shopData) {
     });
   });
   // Route to show list of bargain books
-  app.get("/books/bargainbooks", function (req, res) {
-    let sqlquery = "SELECT * FROM books WHERE price<20"; // query database to get all the books
-
-    // Execute SQL query
-    db.query(sqlquery, (err, result) => {
-      if (err) {
-        next(err);
-      }
-      res.render("bargainlist.ejs", {
-        bargainBooks: result,
-        shopData: shopData,
-      });
-    });
-  });
 };
