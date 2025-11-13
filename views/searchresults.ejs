@@ -7,23 +7,33 @@
   </head>
   <body>
     <header>
+      <!-- Display shop name from shopData object passed from route -->
       <h1><%= shopData.shopName %> Shop</h1>
     </header>
 
     <main>
       <h2>Search Results</h2>
 
+      <!-- 
+        Conditional rendering based on search results
+        If books array has items, display them; otherwise show "no results" message
+      -->
       <% if (books.length > 0) { %>
-      <ul class="book-list">
-        <% books.forEach(function(book) { %>
-        <li class="book-item">
-          <strong><%= book.name %></strong> — £<%= Number(book.price).toFixed(2)
-          %>
-        </li>
-        <% }); %>
-      </ul>
+        <!-- Loop through each book in the results array -->
+        <ul class="book-list">
+          <% books.forEach(function(book) { %>
+            <li class="book-item">
+              <!-- 
+                Display book name and price
+                toFixed(2) ensures price shows exactly 2 decimal places (e.g., £12.99)
+              -->
+              <strong><%= book.name %></strong> — £<%= Number(book.price).toFixed(2) %>
+            </li>
+          <% }); %>
+        </ul>
       <% } else { %>
-      <p>No books found matching "<%= keyword %>".</p>
+        <!-- Display this message if no books matched the search keyword -->
+        <p>No books found matching "<%= keyword %>".</p>
       <% } %>
     </main>
   </body>

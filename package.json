@@ -1,11 +1,21 @@
 {
-  "name": "03.1.a-lab2",
+  "name": "berties-books",
   "version": "1.0.0",
+  "description": "A dynamic web application for managing a bookshop inventory with search, list, and add functionality using Node.js, Express, EJS, and MySQL",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "keywords": [
+    "express",
+    "mysql",
+    "ejs",
+    "bookshop",
+    "inventory",
+    "web-app"
+  ],
+  "author": "Student ID: 33821100",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -17,11 +27,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lewfer/gs-dwa-lab-3.1.git"
+    "url": "git+https://github.com/Hwane14/06_berties_33821100.git"
   },
   "bugs": {
-    "url": "https://github.com/lewfer/gs-dwa-lab-3.1/issues"
+    "url": "https://github.com/Hwane14/06_berties_33821100/issues"
   },
-  "homepage": "https://github.com/lewfer/gs-dwa-lab-3.1#readme",
-  "description": ""
+  "homepage": "https://github.com/Hwane14/06_berties_33821100#readme"
 }

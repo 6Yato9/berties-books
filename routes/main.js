@@ -1,35 +1,57 @@
-module.exports = function (app, shopData) {
-  // Handle our routes
-  app.get("/", function (req, res) {
-    res.render("index.ejs", shopData);
-  });
-  app.get("/about", function (req, res) {
-    res.render("about.ejs", shopData);
-  });
-  app.get("/search", function (req, res) {
-    res.render("search.ejs", shopData);
-  });
-  app.get("/search-result", function (req, res, next) {
-    let searchQuery = "SELECT * FROM books WHERE LOWER(name) LIKE LOWER(?)";
-    let keyword = `%${req.query.keyword}%`; // wrap keyword with wildcards
+/**
+ * Main Routes Module
+ * 
+ * This module defines the core application routes including:
+ * - Homepage
+ * - About page
+ * - User registration
+ * - Book addition functionality
+ * 
+ * All routes are attached directly to the Express app instance
+ */
 
-    //searching in the database
-    db.query(searchQuery, [keyword], (err, result) => {
-      if (err) {
-        next(err);
-      }
-      res.render("searchresults.ejs", {
-        books: result,
-        shopData: shopData,
-        keyword: req.query.keyword,
-      });
-    });
+module.exports = function (app, shopData) {
+  // ==================== GET Routes ====================
+  
+  /**
+   * Route: Homepage (/)
+   * Method: GET
+   * Purpose: Display the main landing page with navigation links
+   */
+  app.get("/", function (req, res) {
+    res.render("index.ejs", { shopData: shopData });
   });
+  
+  /**
+   * Route: About Page (/about)
+   * Method: GET
+   * Purpose: Display information about the bookshop
+   */
+  app.get("/about", function (req, res) {
+    res.render("about.ejs", { shopData: shopData });
+  });
+
+  /**
+   * Route: Registration Form (/register)
+   * Method: GET
+   * Purpose: Display the user registration form
+   */
   app.get("/register", function (req, res) {
-    res.render("register.ejs", shopData);
+    res.render("register.ejs", { shopData: shopData });
   });
+  
+  // ==================== POST Routes ====================
+  
+  /**
+   * Route: Handle Registration (/registered)
+   * Method: POST
+   * Purpose: Process user registration form submission
+   * Form Data: first, last, email
+   * Response: Confirmation message with user details
+   */
   app.post("/registered", function (req, res) {
-    // saving data in database
+    // In a real application, this would save to a database
+    // For now, we just display a confirmation message
     res.send(
       " Hello " +
         req.body.first +
@@ -39,21 +61,28 @@ module.exports = function (app, shopData) {
         req.body.email
     );
   });
-  // Route to render list.ejs
 
-  // Route to handle form submission for adding a new book to the database
+  /**
+   * Route: Add Book to Database (/bookadded)
+   * Method: POST
+   * Purpose: Insert a new book into the database
+   * Form Data: name (book title), price (book price)
+   * Response: Confirmation message with book details
+   */
   app.post("/bookadded", function (req, res, next) {
-    // Saving data in database
+    // SQL query with placeholders (?) to prevent SQL injection
     let sqlquery = "INSERT INTO books (name, price) VALUES (?,?)";
 
-    // Execute SQL query
+    // Create array with form data to safely insert into query
     let newrecord = [req.body.name, req.body.price];
 
-    // Send data to database if no error
+    // Execute the database query
     db.query(sqlquery, newrecord, (err, result) => {
       if (err) {
+        // Pass error to Express error handler
         next(err);
       } else {
+        // Send success message back to user
         res.send(
           "This book is added to database, name: " +
             req.body.name +
@@ -63,5 +92,4 @@ module.exports = function (app, shopData) {
       }
     });
   });
-  // Route to show list of bargain books
 };
