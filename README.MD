@@ -62,6 +62,7 @@ mysql -u root -p myBookshop < insert_test_data.sql
 ```
 
 This will:
+
 - Create the `myBookshop` database
 - Create the `books` table
 - Create a database user `berties_books_app` with appropriate permissions
@@ -78,6 +79,7 @@ You should see: `Example app listening on port 8000!`
 ### 5. Access the Application
 
 Open your browser and navigate to:
+
 ```
 http://localhost:8000
 ```
@@ -86,18 +88,18 @@ http://localhost:8000
 
 ## 🗺️ Available Routes
 
-| Route                  | Method | Description                              |
-| ---------------------- | ------ | ---------------------------------------- |
-| `/`                    | GET    | Homepage with navigation links           |
-| `/about`               | GET    | About Bertie's Books page                |
-| `/search`              | GET    | Search form for books                    |
-| `/search-result`       | GET    | Display search results                   |
-| `/register`            | GET    | User registration form                   |
-| `/registered`          | POST   | Handle registration submission           |
-| `/list`                | GET    | Display all books in inventory           |
-| `/books/addbook`       | GET    | Form to add a new book                   |
-| `/bookadded`           | POST   | Handle book submission to database       |
-| `/books/bargainbooks`  | GET    | Display books priced under £20           |
+| Route                 | Method | Description                        |
+| --------------------- | ------ | ---------------------------------- |
+| `/`                   | GET    | Homepage with navigation links     |
+| `/about`              | GET    | About Bertie's Books page          |
+| `/search`             | GET    | Search form for books              |
+| `/search-result`      | GET    | Display search results             |
+| `/register`           | GET    | User registration form             |
+| `/registered`         | POST   | Handle registration submission     |
+| `/list`               | GET    | Display all books in inventory     |
+| `/books/addbook`      | GET    | Form to add a new book             |
+| `/bookadded`          | POST   | Handle book submission to database |
+| `/books/bargainbooks` | GET    | Display books priced under £20     |
 
 ---
 
@@ -106,6 +108,7 @@ http://localhost:8000
 The search functionality supports **partial, case-insensitive matching** using SQL `LIKE` queries with wildcards.
 
 **Example:**
+
 - Searching for `"World"` will return:
   - _Brave New World_
   - _Atlas of the World_
@@ -119,11 +122,11 @@ This allows users to find books even if they only remember part of the title.
 
 ### Books Table
 
-| Column | Type          | Description                |
-| ------ | ------------- | -------------------------- |
-| `id`   | INT           | Primary key, auto-increment |
-| `name` | VARCHAR(50)   | Book title                 |
-| `price`| DECIMAL(5, 2) | Book price in GBP          |
+| Column  | Type          | Description                 |
+| ------- | ------------- | --------------------------- |
+| `id`    | INT           | Primary key, auto-increment |
+| `name`  | VARCHAR(50)   | Book title                  |
+| `price` | DECIMAL(5, 2) | Book price in GBP           |
 
 ---
 
@@ -158,6 +161,7 @@ berties-books/
 ### Database Connection Error
 
 If you see `Access denied for user 'berties_books_app'`:
+
 1. Ensure you ran `create_db.sql` with root privileges
 2. Verify the database name is `myBookshop` (not `berties_books`)
 3. Check that the user has proper permissions:
@@ -168,12 +172,14 @@ If you see `Access denied for user 'berties_books_app'`:
 ### Port Already in Use
 
 If port 8000 is already in use:
+
 ```bash
 # Find and kill the process using port 8000
 lsof -ti:8000 | xargs kill -9
 ```
 
 Or change the port in `index.js`:
+
 ```javascript
 const port = 3000; // Change to any available port
 ```
@@ -183,10 +189,3 @@ const port = 3000; // Change to any available port
 ## 📝 License
 
 This project is part of the Dynamic Web Applications module coursework.
-
----
-
-## 👤 Author
-
-**Student ID:** 33821100  
-**GitHub:** [@Hwane14](https://github.com/Hwane14)
