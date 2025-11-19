@@ -72,6 +72,12 @@ This will:
 - Create a database user `berties_books_app` with appropriate permissions
 - Insert sample book data
 - Create the `users` and `audit_log` tables for authentication
+- Insert a default test user for login testing
+
+**Default Test User Credentials:**
+
+- Username: `gold`
+- Password: `smiths`
 
 ### 4. Start the Application
 
