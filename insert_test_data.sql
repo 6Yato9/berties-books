@@ -25,3 +25,14 @@ VALUES
     ('Animal Farm', 12.99),        -- Allegory by George Orwell
     ('Trees of Great Britain', 42.00),  -- Reference book
     ('Atlas of the World', 25.00);      -- Geography reference
+
+/**
+ * Insert default test user for deployment and testing
+ * 
+ * Username: gold
+ * Password: smiths (hashed with bcrypt, 10 salt rounds)
+ * 
+ * This user can be used for marking and testing purposes.
+ */
+INSERT INTO users (username, first_name, last_name, email, hashedPassword) 
+VALUES ('gold', 'Gold', 'Smiths', 'gold@example.com', '$2b$10$ssu/ingAZrYHKlVreoV48.kZDpJly/p/2DKKfL9VsCzRI/FMyiCum');
