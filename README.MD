@@ -1,6 +1,6 @@
 # Bertie's Books 📚
 
-**Bertie's Books** is a dynamic Node.js web application for managing a bookshop inventory. Users can browse available books, add new entries, register, and search the catalog using exact or partial matches. This project demonstrates full-stack web development with Express routing, EJS templating, and MySQL database integration.
+**Bertie's Books** is a dynamic Node.js web application for managing a bookshop inventory. Users can browse available books, add new entries, register, login, view all registered users, and search the catalog using exact or partial matches. This project demonstrates full-stack web development with Express routing, EJS templating, and MySQL database integration.
 
 ---
 
