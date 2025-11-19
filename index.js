@@ -1,16 +1,16 @@
 /**
  * Bertie's Books - Main Application Entry Point
- * 
+ *
  * This is the main server file that initializes the Express application,
  * configures middleware, sets up database connections, and loads route handlers.
  */
 
 // ==================== Module Imports ====================
 // Import required Node.js modules and external packages
-var express = require("express");        // Web framework for Node.js
-var ejs = require("ejs");                // Template engine for rendering dynamic HTML
+var express = require("express"); // Web framework for Node.js
+var ejs = require("ejs"); // Template engine for rendering dynamic HTML
 var bodyParser = require("body-parser"); // Middleware to parse incoming request bodies
-var mysql = require("mysql2");           // MySQL database driver
+var mysql = require("mysql2"); // MySQL database driver
 
 // ==================== Application Setup ====================
 // Create the Express application instance
@@ -45,13 +45,13 @@ var shopData = { shopName: "Bertie's Books" };
 // Create a connection pool for MySQL database
 // Using a pool allows multiple simultaneous database connections for better performance
 const db = mysql.createPool({
-  host: "localhost",                  // Database server location
-  user: "berties_books_app",         // Database user with appropriate permissions
-  password: "qwertyuiop",            // User password (in production, use environment variables!)
-  database: "myBookshop",            // Name of the database to connect to
-  waitForConnections: true,          // Queue requests when all connections are in use
-  connectionLimit: 10,               // Maximum number of connections in the pool
-  queueLimit: 0,                     // Unlimited queued connection requests
+  host: "localhost", // Database server location
+  user: "berties_books_app", // Database user with appropriate permissions
+  password: "qwertyuiop", // User password (in production, use environment variables!)
+  database: "myBookshop", // Name of the database to connect to
+  waitForConnections: true, // Queue requests when all connections are in use
+  connectionLimit: 10, // Maximum number of connections in the pool
+  queueLimit: 0, // Unlimited queued connection requests
 });
 
 // Make database connection available globally to all route handlers
@@ -66,6 +66,11 @@ require("./routes/main")(app, shopData);
 // All routes defined in books.js will be accessed via /books/*
 const booksRouter = require("./routes/books")(shopData);
 app.use("/books", booksRouter);
+
+// Load users route handlers and mount them under the '/users' prefix
+// All routes defined in users.js will be accessed via /users/*
+const usersRouter = require("./routes/users")(shopData);
+app.use("/users", usersRouter);
 
 // ==================== Start Server ====================
 // Start the Express server and listen for incoming requests

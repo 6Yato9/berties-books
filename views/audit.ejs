@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Audit Log - <%=shopData.shopName%></title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <style>
+      .success {
+        color: green;
+        font-weight: bold;
+      }
+      .failed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Login Audit History - <%=shopData.shopName%></h1>
+
+    <% if (auditLog.length > 0) { %>
+    <table border="1" cellpadding="10">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Status</th>
+          <th>Message</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% auditLog.forEach(function(log) { %>
+        <tr>
+          <td><%= log.id %></td>
+          <td><%= log.username %></td>
+          <td class="<%= log.success ? 'success' : 'failed' %>">
+            <%= log.success ? 'SUCCESS' : 'FAILED' %>
+          </td>
+          <td><%= log.message %></td>
+          <td><%= new Date(log.timestamp).toLocaleString() %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <p>No audit log entries found.</p>
+    <% } %>
+
+    <br />
+    <a href="/">Home</a> | <a href="/users/login">Login</a>
+  </body>
+</html>
