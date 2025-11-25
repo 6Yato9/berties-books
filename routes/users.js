@@ -11,6 +11,7 @@
 // Import required modules
 const express = require("express");
 const bcrypt = require("bcrypt");
+const { check, validationResult } = require("express-validator");
 const router = express.Router();
 
 // Configuration for bcrypt
@@ -53,55 +54,74 @@ module.exports = function (shopData) {
    * Method: POST
    * Purpose: Process registration form, hash password, and save to database
    * Form Data: username, first, last, email, password
+   * Validation: Email format, username length (5-20), password length (min 8)
    */
-  router.post("/registered", function (req, res, next) {
-    // Extract password from request body
-    const plainPassword = req.body.password;
+  router.post(
+    "/registered",
+    [
+      check("email").isEmail(),
+      check("username").isLength({ min: 5, max: 20 }),
+      check("password").isLength({ min: 8 }),
+    ],
+    function (req, res, next) {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.redirect("./register");
+      } else {
+        // Sanitize input fields to prevent XSS attacks
+        const sanitizedFirst = req.sanitize(req.body.first);
+        const sanitizedLast = req.sanitize(req.body.last);
+        const sanitizedUsername = req.sanitize(req.body.username);
 
-    // Hash the password before storing it in the database
-    bcrypt.hash(plainPassword, saltRounds, function (err, hashedPassword) {
-      if (err) {
-        next(err);
-        return;
+        // Extract password from request body
+        const plainPassword = req.body.password;
+
+        // Hash the password before storing it in the database
+        bcrypt.hash(plainPassword, saltRounds, function (err, hashedPassword) {
+          if (err) {
+            next(err);
+            return;
+          }
+
+          // SQL query to insert new user into database
+          let sqlquery =
+            "INSERT INTO users (username, first_name, last_name, email, hashedPassword) VALUES (?,?,?,?,?)";
+
+          // Create array with form data including hashed password and sanitized inputs
+          let newUser = [
+            sanitizedUsername,
+            sanitizedFirst,
+            sanitizedLast,
+            req.body.email,
+            hashedPassword,
+          ];
+
+          // Execute database query to save user
+          db.query(sqlquery, newUser, (err, result) => {
+            if (err) {
+              next(err);
+            } else {
+              // Send success message with user details (using sanitized values)
+              let responseMessage =
+                "Hello " +
+                sanitizedFirst +
+                " " +
+                sanitizedLast +
+                " you are now registered! ";
+              responseMessage +=
+                "We will send an email to you at " + req.body.email + ". ";
+              responseMessage +=
+                "Your password is: " +
+                req.body.password +
+                " and your hashed password is: " +
+                hashedPassword;
+              res.send(responseMessage);
+            }
+          });
+        });
       }
-
-      // SQL query to insert new user into database
-      let sqlquery =
-        "INSERT INTO users (username, first_name, last_name, email, hashedPassword) VALUES (?,?,?,?,?)";
-
-      // Create array with form data including hashed password
-      let newUser = [
-        req.body.username,
-        req.body.first,
-        req.body.last,
-        req.body.email,
-        hashedPassword,
-      ];
-
-      // Execute database query to save user
-      db.query(sqlquery, newUser, (err, result) => {
-        if (err) {
-          next(err);
-        } else {
-          // Send success message with user details (including password for debugging)
-          let responseMessage =
-            "Hello " +
-            req.body.first +
-            " " +
-            req.body.last +
-            " you are now registered! ";
-          responseMessage +=
-            "We will send an email to you at " + req.body.email + ". ";
-          responseMessage +=
-            "Your password is: " +
-            req.body.password +
-            " and your hashed password is: " +
-            hashedPassword;
-          res.send(responseMessage);
-        }
-      });
-    });
-  });
+    }
+  );
 
   // ==================== User Listing Routes ====================
 
@@ -145,9 +165,11 @@ module.exports = function (shopData) {
    * Method: POST
    * Purpose: Verify username and password, log audit trail
    * Form Data: username, password
+   * Security: Sanitizes username to prevent XSS (password left unsanitized for bcrypt comparison)
    */
   router.post("/loggedin", function (req, res, next) {
-    const username = req.body.username;
+    // Sanitize username to prevent XSS attacks
+    const username = req.sanitize(req.body.username);
     const plainPassword = req.body.password;
 
     // SQL query to retrieve user's hashed password from database

@@ -97,13 +97,18 @@ module.exports = function (app, shopData) {
    * Purpose: Insert a new book into the database
    * Form Data: name (book title), price (book price)
    * Response: Confirmation message with book details
+   * Security: Sanitizes input to prevent XSS attacks
    */
   app.post("/bookadded", function (req, res, next) {
+    // Sanitize input fields to prevent XSS attacks
+    const sanitizedName = req.sanitize(req.body.name);
+    const sanitizedPrice = req.sanitize(req.body.price);
+
     // SQL query with placeholders (?) to prevent SQL injection
     let sqlquery = "INSERT INTO books (name, price) VALUES (?,?)";
 
-    // Create array with form data to safely insert into query
-    let newrecord = [req.body.name, req.body.price];
+    // Create array with sanitized form data to safely insert into query
+    let newrecord = [sanitizedName, sanitizedPrice];
 
     // Execute the database query
     db.query(sqlquery, newrecord, (err, result) => {
@@ -111,12 +116,12 @@ module.exports = function (app, shopData) {
         // Pass error to Express error handler
         next(err);
       } else {
-        // Send success message back to user
+        // Send success message back to user (using sanitized values)
         res.send(
           "This book is added to database, name: " +
-            req.body.name +
+            sanitizedName +
             " price: £" +
-            req.body.price
+            sanitizedPrice
         );
       }
     });

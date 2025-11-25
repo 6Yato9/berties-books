@@ -20,6 +20,7 @@ var ejs = require("ejs"); // Template engine for rendering dynamic HTML
 var bodyParser = require("body-parser"); // Middleware to parse incoming request bodies
 var mysql = require("mysql2"); // MySQL database driver
 var session = require("express-session"); // Session management middleware
+const expressSanitizer = require("express-sanitizer"); // Input sanitization middleware
 
 // ==================== Application Setup ====================
 // Create the Express application instance
@@ -29,6 +30,10 @@ const port = 8000; // Port number the server will listen on
 // Configure body-parser middleware to handle URL-encoded form data
 // extended: true allows for rich objects and arrays to be encoded
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// ==================== Sanitization Configuration ====================
+// Create an input sanitizer to protect against XSS attacks
+app.use(expressSanitizer());
 
 // ==================== Session Configuration ====================
 // Create a session

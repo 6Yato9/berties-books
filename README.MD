@@ -13,6 +13,8 @@
 - **User Authentication** — Complete registration and login system with secure password hashing
 - **Session Management** — Track logged-in users with express-session middleware
 - **Access Control** — Restrict sensitive routes to authenticated users only
+- **Input Validation** — Server-side validation using express-validator for email format, username length, and password strength
+- **XSS Protection** — Input sanitization using express-sanitizer to prevent Cross-Site Scripting attacks
 - **User Management** — View all registered users (without passwords for security)
 - **Audit Logging** — Track all login attempts (successful and failed) with timestamps
 - **Responsive Design** — Clean, modern UI with custom CSS styling
@@ -28,6 +30,8 @@
 - **MySQL2** — MySQL database driver with connection pooling
 - **bcrypt** — Industry-standard library for secure password hashing
 - **express-session** — Session middleware for user authentication and access control
+- **express-validator** — Server-side validation for form inputs
+- **express-sanitizer** — Input sanitization to prevent XSS attacks
 - **Body-Parser** — Middleware for parsing request bodies
 - **CSS3** — Custom styling for modern UI
 
@@ -346,6 +350,148 @@ The application uses a `redirectLogin` middleware function to protect routes tha
 - Cookie expiration ensures sessions don't persist indefinitely
 - The `redirectLogin` middleware prevents unauthorized access to sensitive routes
 - In production, use HTTPS to protect session cookies from interception
+
+---
+
+## ✅ Input Validation & Sanitization
+
+### Overview
+
+The application implements robust input validation and sanitization to ensure data integrity and protect against security vulnerabilities, particularly Cross-Site Scripting (XSS) attacks.
+
+### Validation (express-validator)
+
+**Purpose**: Ensure user inputs meet specific requirements before processing.
+
+**Implementation in Registration Route** (`/users/registered`):
+
+| Field      | Validation Rule                 | Description                         |
+| ---------- | ------------------------------- | ----------------------------------- |
+| `email`    | `isEmail()`                     | Must be a valid email format        |
+| `username` | `isLength({ min: 5, max: 20 })` | Must be between 5 and 20 characters |
+| `password` | `isLength({ min: 8 })`          | Must be at least 8 characters long  |
+
+**Password Requirement**: The validation allows the password `aaaaAAAA1234!` as specified in the requirements, meeting the minimum 8-character length.
+
+**How it works**:
+
+1. Validation middleware runs before the route handler
+2. If validation fails, user is redirected back to the registration page
+3. If validation passes, the registration process continues
+4. `validationResult(req)` checks for validation errors
+
+**Code Example**:
+
+```javascript
+router.post(
+  "/registered",
+  [
+    check("email").isEmail(),
+    check("username").isLength({ min: 5, max: 20 }),
+    check("password").isLength({ min: 8 }),
+  ],
+  function (req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.redirect("./register");
+    } else {
+      // Continue with registration
+    }
+  }
+);
+```
+
+### Sanitization (express-sanitizer)
+
+**Purpose**: Remove or encode potentially malicious HTML/JavaScript from user inputs to prevent XSS attacks.
+
+**Configuration**: Applied globally as middleware in `index.js`:
+
+```javascript
+app.use(expressSanitizer());
+```
+
+**Where Sanitization is Applied**:
+
+| Route               | Fields Sanitized            | Reason                                   |
+| ------------------- | --------------------------- | ---------------------------------------- |
+| `/users/registered` | `first`, `last`, `username` | Prevent XSS when displaying user data    |
+| `/users/loggedin`   | `username`                  | Prevent XSS in login responses           |
+| `/bookadded`        | `name`, `price`             | Prevent XSS when displaying book details |
+
+**Fields NOT Sanitized**:
+
+- **Passwords**: Left unsanitized because they are hashed (not displayed) and need exact character matching for bcrypt comparison
+- **Email**: Already validated for correct format; parameterized queries prevent SQL injection
+
+**Code Example**:
+
+```javascript
+const sanitizedFirst = req.sanitize(req.body.first);
+const sanitizedLast = req.sanitize(req.body.last);
+const sanitizedUsername = req.sanitize(req.body.username);
+```
+
+### XSS Attack Demonstration
+
+**What is XSS?**
+Cross-Site Scripting (XSS) is an attack where malicious scripts are injected into web pages viewed by other users.
+
+**Example Attack**:
+If an attacker enters this in the "First Name" field without sanitization:
+
+```html
+Henry
+<script>
+  alert("Gotcha!");
+</script>
+```
+
+Without sanitization, this JavaScript would execute when the user data is displayed, showing an alert popup.
+
+**With Sanitization**:
+The `express-sanitizer` middleware converts dangerous characters:
+
+```html
+Henry &lt;script&gt;alert("Gotcha!")&lt;/script&gt;
+```
+
+The script tags are encoded and displayed as plain text instead of executing.
+
+### Testing Validation and Sanitization
+
+**Test Validation**:
+
+1. Try to register with an invalid email (e.g., "notanemail")
+2. Try a username shorter than 5 characters
+3. Try a password shorter than 8 characters
+4. In all cases, you should be redirected back to the registration page
+
+**Test Sanitization (XSS Prevention)**:
+
+1. Go to the registration page
+2. Enter in the "First name" field: `Henry <script>alert("Gotcha!")</script>`
+3. Fill other fields correctly and submit
+4. Check the confirmation message - the script tags should appear as text, not execute
+
+**Valid Password Test**:
+
+- Password `aaaaAAAA1234!` meets the minimum 8-character requirement and should pass validation
+
+### Security Benefits
+
+- **Data Integrity**: Ensures data meets expected formats before database storage
+- **XSS Prevention**: Removes malicious scripts from user inputs
+- **User Experience**: Provides immediate feedback on invalid inputs
+- **Defense in Depth**: Multiple security layers (validation + sanitization + parameterized queries)
+
+### Additional Validation in Other Forms
+
+While the primary focus is on the registration form, similar validation and sanitization principles can be applied to:
+
+- Login form (username sanitization applied)
+- Book addition form (name and price sanitization applied)
+- Search forms (already protected through parameterized SQL queries)
 
 ---
 
