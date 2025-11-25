@@ -11,6 +11,8 @@
 - **Advanced Search** — Partial matching search to find books by title
 - **Bargain Books** — Filter and display books priced under £20
 - **User Authentication** — Complete registration and login system with secure password hashing
+- **Session Management** — Track logged-in users with express-session middleware
+- **Access Control** — Restrict sensitive routes to authenticated users only
 - **User Management** — View all registered users (without passwords for security)
 - **Audit Logging** — Track all login attempts (successful and failed) with timestamps
 - **Responsive Design** — Clean, modern UI with custom CSS styling
@@ -25,6 +27,7 @@
 - **EJS** — Embedded JavaScript templating engine
 - **MySQL2** — MySQL database driver with connection pooling
 - **bcrypt** — Industry-standard library for secure password hashing
+- **express-session** — Session middleware for user authentication and access control
 - **Body-Parser** — Middleware for parsing request bodies
 - **CSS3** — Custom styling for modern UI
 
@@ -105,6 +108,7 @@ http://localhost:8000
 | ------------- | ------ | ---------------------------------- |
 | `/`           | GET    | Homepage with navigation links     |
 | `/about`      | GET    | About Bertie's Books page          |
+| `/logout`     | GET    | Logout user and destroy session    |
 | `/register`   | GET    | User registration form (legacy)    |
 | `/registered` | POST   | Handle registration (legacy)       |
 | `/bookadded`  | POST   | Handle book submission to database |
@@ -261,7 +265,91 @@ In a production environment, audit logs should be:
 
 ---
 
-## �🐛 Troubleshooting
+## 🔐 Session Management & Access Control
+
+### Overview
+
+The application implements session management using `express-session` to track logged-in users and restrict access to certain routes based on authentication status.
+
+### Implementation Details
+
+**Session Configuration** (in `index.js`):
+
+- Secret: `somerandomstuff` (should be a strong random string in production)
+- `resave: false` - Don't save session if unmodified
+- `saveUninitialized: false` - Don't create session until something is stored
+- Cookie expiration: 600,000 ms (10 minutes)
+
+**Session Storage**:
+
+- When a user successfully logs in, their `username` is stored in `req.session.userId`
+- This session persists across requests until logout or expiration
+
+**Logout Functionality**:
+
+- Route: `/logout`
+- Destroys the user session using `req.session.destroy()`
+- Redirects to homepage with a logout confirmation message
+- Accessible via logout link on the homepage
+
+### Access Control
+
+The application uses a `redirectLogin` middleware function to protect routes that require authentication. This middleware checks if a user is logged in (by verifying `req.session.userId` exists) and redirects to the login page if not.
+
+**Routes with Access Control (Login Required)**:
+
+| Route            | Access Level | Reason                                  |
+| ---------------- | ------------ | --------------------------------------- |
+| `/users/list`    | 🔒 Protected | Viewing user information requires login |
+| `/users/audit`   | 🔒 Protected | Audit logs contain sensitive data       |
+| `/books/addbook` | 🔒 Protected | Only logged-in users can add books      |
+| `/logout`        | 🔒 Protected | Must be logged in to log out            |
+
+**Public Routes (No Login Required)**:
+
+| Route                  | Access Level | Reason                                           |
+| ---------------------- | ------------ | ------------------------------------------------ |
+| `/`                    | 🌐 Public    | Homepage should be accessible to everyone        |
+| `/about`               | 🌐 Public    | Information page should be public                |
+| `/users/register`      | 🌐 Public    | Must be public for new user registration         |
+| `/users/login`         | 🌐 Public    | Must be public for users to log in               |
+| `/books/search`        | 🌐 Public    | Allow browsing/searching without login           |
+| `/books/search-result` | 🌐 Public    | Allow viewing search results without login       |
+| `/books/list`          | 🌐 Public    | Allow browsing book catalog without login        |
+| `/books/bargainbooks`  | 🌐 Public    | Allow viewing bargain books without login        |
+| `/bookadded`           | 🌐 Public    | POST route for adding books (could be protected) |
+
+### Testing Access Control
+
+**To test the access control:**
+
+1. **Without logging in:**
+
+   - Try to access `/users/list` - You should be redirected to `/users/login`
+   - Try to access `/users/audit` - You should be redirected to `/users/login`
+   - Try to access `/books/addbook` - You should be redirected to `/users/login`
+
+2. **After logging in:**
+
+   - Access `/users/list` - You should see the list of users
+   - Access `/users/audit` - You should see the audit log
+   - Access `/books/addbook` - You should see the add book form
+
+3. **After logging out:**
+   - Click the logout link on the homepage
+   - Try accessing protected pages again - You should be redirected to login
+
+### Security Considerations
+
+- Session secret should be a strong, randomly generated string in production
+- Session data is stored server-side; only a session ID cookie is sent to the client
+- Cookie expiration ensures sessions don't persist indefinitely
+- The `redirectLogin` middleware prevents unauthorized access to sensitive routes
+- In production, use HTTPS to protect session cookies from interception
+
+---
+
+## 🐛 Troubleshooting
 
 ### Database Connection Error
 

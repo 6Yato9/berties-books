@@ -1,9 +1,9 @@
 /**
  * Books Routes Module
- * 
+ *
  * This module defines all book-related routes using Express Router.
  * All routes are mounted under the '/books' prefix in the main application.
- * 
+ *
  * Routes included:
  * - Search functionality (form and results)
  * - List all books
@@ -16,14 +16,26 @@ const express = require("express");
 const router = express.Router();
 
 /**
+ * Middleware: redirectLogin
+ * Purpose: Redirect to login page if user is not logged in
+ * Usage: Add as middleware to routes that require authentication
+ */
+const redirectLogin = (req, res, next) => {
+  if (!req.session.userId) {
+    res.redirect("../users/login"); // redirect to the login page
+  } else {
+    next(); // move to the next middleware function
+  }
+};
+
+/**
  * Export a function that configures and returns the router
  * @param {Object} shopData - Shop information to pass to templates
  * @returns {Router} Configured Express router
  */
 module.exports = function (shopData) {
-  
   // ==================== Search Routes ====================
-  
+
   /**
    * Route: Search Form (/books/search)
    * Method: GET
@@ -44,7 +56,7 @@ module.exports = function (shopData) {
     // SQL query for case-insensitive partial matching
     // LOWER() converts both the column and search term to lowercase
     let searchQuery = "SELECT * FROM books WHERE LOWER(name) LIKE LOWER(?)";
-    
+
     // Wrap keyword with % wildcards for partial matching
     // e.g., 'world' becomes '%world%' to match 'Brave New World'
     let keyword = `%${req.query.keyword}%`;
@@ -65,7 +77,7 @@ module.exports = function (shopData) {
   });
 
   // ==================== Book Listing Routes ====================
-  
+
   /**
    * Route: List All Books (/books/list)
    * Method: GET
@@ -88,13 +100,14 @@ module.exports = function (shopData) {
       });
     });
   });
-  
+
   /**
    * Route: Add Book Form (/books/addbook)
    * Method: GET
    * Purpose: Display form for adding a new book to the database
+   * Access Control: Requires user to be logged in (redirectLogin middleware)
    */
-  router.get("/addbook", function (req, res) {
+  router.get("/addbook", redirectLogin, function (req, res) {
     res.render("addbook.ejs", { shopData: shopData });
   });
 

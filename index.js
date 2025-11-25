@@ -19,6 +19,7 @@ var express = require("express"); // Web framework for Node.js
 var ejs = require("ejs"); // Template engine for rendering dynamic HTML
 var bodyParser = require("body-parser"); // Middleware to parse incoming request bodies
 var mysql = require("mysql2"); // MySQL database driver
+var session = require("express-session"); // Session management middleware
 
 // ==================== Application Setup ====================
 // Create the Express application instance
@@ -28,6 +29,19 @@ const port = 8000; // Port number the server will listen on
 // Configure body-parser middleware to handle URL-encoded form data
 // extended: true allows for rich objects and arrays to be encoded
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// ==================== Session Configuration ====================
+// Create a session
+app.use(
+  session({
+    secret: "somerandomstuff",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      expires: 600000,
+    },
+  })
+);
 
 // ==================== Static Files & Views Configuration ====================
 // Serve static files (CSS, images, etc.) from the 'public' directory

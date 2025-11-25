@@ -16,6 +16,21 @@ const router = express.Router();
 // Configuration for bcrypt
 const saltRounds = 10;
 
+// ==================== Middleware ====================
+
+/**
+ * Middleware: redirectLogin
+ * Purpose: Redirect to login page if user is not logged in
+ * Usage: Add as middleware to routes that require authentication
+ */
+const redirectLogin = (req, res, next) => {
+  if (!req.session.userId) {
+    res.redirect("./login"); // redirect to the login page
+  } else {
+    next(); // move to the next middleware function
+  }
+};
+
 /**
  * Export a function that configures and returns the router
  * @param {Object} shopData - Shop information to pass to templates
@@ -94,8 +109,9 @@ module.exports = function (shopData) {
    * Route: List All Users (/users/list)
    * Method: GET
    * Purpose: Display all registered users (without passwords)
+   * Access Control: Requires user to be logged in (redirectLogin middleware)
    */
-  router.get("/list", function (req, res, next) {
+  router.get("/list", redirectLogin, function (req, res, next) {
     // SQL query to retrieve all users (excluding password field)
     let sqlquery = "SELECT username, first_name, last_name, email FROM users";
 
@@ -164,6 +180,8 @@ module.exports = function (shopData) {
 
         if (result === true) {
           // Password matches - successful login
+          // Save user session here, when login is successful
+          req.session.userId = req.body.username;
           logAuditTrail(username, true, "Successful login");
           res.send("Login successful! Welcome " + username + "!");
         } else {
@@ -200,8 +218,9 @@ module.exports = function (shopData) {
    * Route: Audit Log (/users/audit)
    * Method: GET
    * Purpose: Display complete audit history of login attempts
+   * Access Control: Requires user to be logged in (redirectLogin middleware)
    */
-  router.get("/audit", function (req, res, next) {
+  router.get("/audit", redirectLogin, function (req, res, next) {
     // SQL query to retrieve all audit log entries, most recent first
     let sqlquery = "SELECT * FROM audit_log ORDER BY timestamp DESC";
 

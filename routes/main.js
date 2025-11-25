@@ -1,18 +1,32 @@
 /**
  * Main Routes Module
- * 
+ *
  * This module defines the core application routes including:
  * - Homepage
  * - About page
  * - User registration
  * - Book addition functionality
- * 
+ * - User logout
+ *
  * All routes are attached directly to the Express app instance
  */
 
+/**
+ * Middleware: redirectLogin
+ * Purpose: Redirect to login page if user is not logged in
+ * Usage: Add as middleware to routes that require authentication
+ */
+const redirectLogin = (req, res, next) => {
+  if (!req.session.userId) {
+    res.redirect("./login"); // redirect to the login page
+  } else {
+    next(); // move to the next middleware function
+  }
+};
+
 module.exports = function (app, shopData) {
   // ==================== GET Routes ====================
-  
+
   /**
    * Route: Homepage (/)
    * Method: GET
@@ -21,7 +35,7 @@ module.exports = function (app, shopData) {
   app.get("/", function (req, res) {
     res.render("index.ejs", { shopData: shopData });
   });
-  
+
   /**
    * Route: About Page (/about)
    * Method: GET
@@ -32,6 +46,21 @@ module.exports = function (app, shopData) {
   });
 
   /**
+   * Route: Logout (/logout)
+   * Method: GET
+   * Purpose: Destroy user session and log them out
+   * Access Control: Requires user to be logged in (redirectLogin middleware)
+   */
+  app.get("/logout", redirectLogin, (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.redirect("./");
+      }
+      res.send('you are now logged out. <a href="+./+">Home</a>');
+    });
+  });
+
+  /**
    * Route: Registration Form (/register)
    * Method: GET
    * Purpose: Display the user registration form
@@ -39,9 +68,9 @@ module.exports = function (app, shopData) {
   app.get("/register", function (req, res) {
     res.render("register.ejs", { shopData: shopData });
   });
-  
+
   // ==================== POST Routes ====================
-  
+
   /**
    * Route: Handle Registration (/registered)
    * Method: POST
