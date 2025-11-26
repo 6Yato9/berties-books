@@ -13,6 +13,7 @@
 - **User Authentication** — Complete registration and login system with secure password hashing
 - **Session Management** — Track logged-in users with express-session middleware
 - **Access Control** — Restrict sensitive routes to authenticated users only
+- **Dynamic UI** — Conditional display of login/logout links based on authentication state
 - **Input Validation** — Server-side validation using express-validator for email format, username length, and password strength
 - **XSS Protection** — Input sanitization using express-sanitizer to prevent Cross-Site Scripting attacks
 - **User Management** — View all registered users (without passwords for security)
@@ -296,6 +297,42 @@ The application implements session management using `express-session` to track l
 - Redirects to homepage with a logout confirmation message
 - Accessible via logout link on the homepage
 
+**Dynamic UI Based on Authentication State**:
+
+The homepage dynamically displays login/logout links based on the user's authentication status, providing a better user experience:
+
+- **When NOT logged in**: Shows "Login" link
+- **When logged in**: Shows "Logout" link
+
+**Implementation**:
+
+The homepage route (`/`) passes the session status to the view:
+
+```javascript
+app.get("/", function (req, res) {
+  res.render("index.ejs", {
+    shopData: shopData,
+    isLoggedIn: !!req.session.userId,
+  });
+});
+```
+
+The EJS template (`index.ejs`) uses conditional rendering:
+
+```html
+<% if (!isLoggedIn) { %>
+<p><a href="users/login">Login</a></p>
+<% } %> <% if (isLoggedIn) { %>
+<p><a href="logout">Logout</a></p>
+<% } %>
+```
+
+**Benefits**:
+
+- Improved user experience with contextually relevant navigation
+- Prevents confusion about authentication state
+- Reduces clutter by only showing relevant actions
+
 ### Access Control
 
 The application uses a `redirectLogin` middleware function to protect routes that require authentication. This middleware checks if a user is logged in (by verifying `req.session.userId` exists) and redirects to the login page if not.
@@ -323,24 +360,27 @@ The application uses a `redirectLogin` middleware function to protect routes tha
 | `/books/bargainbooks`  | 🌐 Public    | Allow viewing bargain books without login        |
 | `/bookadded`           | 🌐 Public    | POST route for adding books (could be protected) |
 
-### Testing Access Control
+### Testing Access Control and Dynamic UI
 
-**To test the access control:**
+**To test the access control and conditional UI display:**
 
 1. **Without logging in:**
 
+   - Visit the homepage (`/`) - You should see the "Login" link, but NOT the "Logout" link
    - Try to access `/users/list` - You should be redirected to `/users/login`
    - Try to access `/users/audit` - You should be redirected to `/users/login`
    - Try to access `/books/addbook` - You should be redirected to `/users/login`
 
 2. **After logging in:**
 
+   - Return to the homepage (`/`) - You should see the "Logout" link, but NOT the "Login" link
    - Access `/users/list` - You should see the list of users
    - Access `/users/audit` - You should see the audit log
    - Access `/books/addbook` - You should see the add book form
 
 3. **After logging out:**
    - Click the logout link on the homepage
+   - Check the homepage - You should now see "Login" again, but NOT "Logout"
    - Try accessing protected pages again - You should be redirected to login
 
 ### Security Considerations

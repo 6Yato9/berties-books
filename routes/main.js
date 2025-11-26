@@ -31,9 +31,13 @@ module.exports = function (app, shopData) {
    * Route: Homepage (/)
    * Method: GET
    * Purpose: Display the main landing page with navigation links
+   * Session Data: Passes isLoggedIn status to view for conditional UI rendering
    */
   app.get("/", function (req, res) {
-    res.render("index.ejs", { shopData: shopData });
+    res.render("index.ejs", {
+      shopData: shopData,
+      isLoggedIn: !!req.session.userId,
+    });
   });
 
   /**
