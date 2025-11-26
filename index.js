@@ -72,7 +72,7 @@ var shopData = { shopName: "Bertie's Books" };
 // Create a connection pool for MySQL database
 // Using a pool allows multiple simultaneous database connections for better performance
 const db = mysql.createPool({
-  host: "localhost", // Database server location
+  host: process.env.BB_HOST, // Database server location
   user: process.env.BB_USER || "berties_books_app", // Database user with appropriate permissions
   password: process.env.BB_PASSWORD || "qwertyuiop", // User password (in production, use environment variables!)
   database: process.env.BB_DATABASE || "myBookshop", // Name of the database to connect to
