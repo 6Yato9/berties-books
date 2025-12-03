@@ -18,6 +18,7 @@
 - **XSS Protection** — Input sanitization using express-sanitizer to prevent Cross-Site Scripting attacks
 - **User Management** — View all registered users (without passwords for security)
 - **Audit Logging** — Track all login attempts (successful and failed) with timestamps
+- **Weather Forecast** — Real-time weather information using OpenWeatherMap API with interactive city search
 - **Responsive Design** — Clean, modern UI with custom CSS styling
 - **Database-Driven** — All data persisted in MySQL with parameterized queries for security
 
@@ -33,6 +34,8 @@
 - **express-session** — Session middleware for user authentication and access control
 - **express-validator** — Server-side validation for form inputs
 - **express-sanitizer** — Input sanitization to prevent XSS attacks
+- **request** — HTTP client for making API calls to external services
+- **OpenWeatherMap API** — Third-party API for real-time weather data
 - **Body-Parser** — Middleware for parsing request bodies
 - **CSS3** — Custom styling for modern UI
 
@@ -109,14 +112,16 @@ http://localhost:8000
 
 ### Main Routes
 
-| Route         | Method | Description                        |
-| ------------- | ------ | ---------------------------------- |
-| `/`           | GET    | Homepage with navigation links     |
-| `/about`      | GET    | About Bertie's Books page          |
-| `/logout`     | GET    | Logout user and destroy session    |
-| `/register`   | GET    | User registration form (legacy)    |
-| `/registered` | POST   | Handle registration (legacy)       |
-| `/bookadded`  | POST   | Handle book submission to database |
+| Route              | Method | Description                        |
+| ------------------ | ------ | ---------------------------------- |
+| `/`                | GET    | Homepage with navigation links     |
+| `/about`           | GET    | About Bertie's Books page          |
+| `/weather`         | GET    | Weather forecast form              |
+| `/weather/results` | GET    | Display weather for specified city |
+| `/logout`          | GET    | Logout user and destroy session    |
+| `/register`        | GET    | User registration form (legacy)    |
+| `/registered`      | POST   | Handle registration (legacy)       |
+| `/bookadded`       | POST   | Handle book submission to database |
 
 ### Books Routes (prefix: `/books`)
 
