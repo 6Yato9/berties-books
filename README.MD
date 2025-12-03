@@ -540,6 +540,155 @@ While the primary focus is on the registration form, similar validation and sani
 
 ---
 
+## 🌤️ Weather Forecast Feature
+
+### Overview
+
+The application integrates with the **OpenWeatherMap API** to provide real-time weather information for any city worldwide. This feature demonstrates how to consume external APIs in a Node.js application.
+
+### API Configuration
+
+**API Provider**: [OpenWeatherMap](https://openweathermap.org/)
+
+**API Key Storage**: The API key is stored in the `.env` file for security:
+
+```
+WEATHER_API_KEY=your_api_key_here
+```
+
+**⚠️ Security Note**: Never hardcode API keys in your source code. Always use environment variables to keep sensitive credentials secure and out of version control.
+
+### Implementation Details
+
+**Routes**:
+
+- **`GET /weather`** - Displays a form where users can enter a city name
+- **`GET /weather/results?city={cityName}`** - Fetches and displays weather data for the specified city
+
+**API Endpoint Used**:
+
+```
+http://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={apiKey}
+```
+
+**Weather Data Displayed**:
+
+- Current temperature (in Celsius)
+- Humidity percentage
+- Wind speed (in meters per second)
+- Weather description (e.g., "clear sky", "light rain")
+
+### Code Example
+
+```javascript
+const request = require("request");
+
+app.get("/weather/results", function (req, res) {
+  const apiKey = process.env.WEATHER_API_KEY;
+  const city = req.query.city || "London";
+  const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+
+  request(url, function (err, response, body) {
+    if (err) {
+      next(err);
+    } else {
+      var weather = JSON.parse(body);
+
+      // Error handling: Check if weather data is valid
+      if (weather !== undefined && weather.main !== undefined) {
+        // Display weather information
+      } else {
+        res.send("No data found for city: " + city);
+      }
+    }
+  });
+});
+```
+
+### Error Handling
+
+The weather route includes robust error handling to deal with common issues:
+
+1. **Invalid City Names**: If the API doesn't find data for the specified city, a user-friendly error message is displayed:
+
+   ```
+   No data found for city: XYZ. Please try another city.
+   ```
+
+2. **API Errors**: Network errors or API failures are caught and handled gracefully
+
+3. **Missing Data**: The code checks if `weather.main` is defined before accessing its properties to prevent crashes
+
+### Why Error Handling is Critical
+
+APIs are external services that you don't control. They can:
+
+- Return unexpected data formats
+- Be temporarily unavailable
+- Have rate limits or quotas
+- Return error responses for invalid inputs
+
+**Without proper error handling**, your application will crash when encountering these scenarios. Always validate API responses before using the data.
+
+### Testing the Weather Feature
+
+**Test with Valid Cities**:
+
+1. Navigate to `http://localhost:8000/weather`
+2. Enter a city name (e.g., "London", "Manchester", "Tokyo")
+3. Click "Get Weather"
+4. You should see temperature, humidity, wind speed, and weather description
+
+**Test Error Handling**:
+
+1. Enter a non-existent city name (e.g., "XYZ123")
+2. Click "Get Weather"
+3. You should see: "No data found for city: XYZ123. Please try another city."
+
+**Test Direct URL Access**:
+
+- Visit: `http://localhost:8000/weather/results?city=Paris`
+- Should display Paris weather immediately
+
+### Getting Your Own API Key
+
+To use this feature, you need a free OpenWeatherMap API key:
+
+1. Sign up at [https://openweathermap.org/appid](https://openweathermap.org/appid)
+2. Get your API key from [https://home.openweathermap.org/api_keys](https://home.openweathermap.org/api_keys)
+3. Add it to your `.env` file:
+   ```
+   WEATHER_API_KEY=your_actual_api_key
+   ```
+4. **Note**: API key activation takes about 10 minutes
+
+### API Request Limitations
+
+**Free Tier Limits**:
+
+- 60 calls per minute
+- 1,000,000 calls per month
+- Current weather data only (no forecasts)
+
+For production applications with high traffic, consider:
+
+- Implementing caching to reduce API calls
+- Rate limiting on your routes
+- Upgrading to a paid API plan if needed
+
+### Future Enhancements
+
+Possible improvements to the weather feature:
+
+- Display 5-day weather forecast
+- Show weather icons
+- Add geolocation to auto-detect user's city
+- Cache weather data to reduce API calls
+- Display more detailed information (sunrise/sunset, pressure, visibility)
+- Add a search history feature
+
+---
+
 ## 🐛 Troubleshooting
 
 ### Database Connection Error
