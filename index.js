@@ -99,6 +99,12 @@ app.use("/books", booksRouter);
 const usersRouter = require("./routes/users")(shopData);
 app.use("/users", usersRouter);
 
+// Load API route handlers and mount them under the '/api' prefix
+// All routes defined in api.js will be accessed via /api/*
+// These routes return JSON data for external API consumption
+const apiRouter = require("./routes/api")(shopData);
+app.use("/api", apiRouter);
+
 // ==================== Start Server ====================
 // Start the Express server and listen for incoming requests
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

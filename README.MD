@@ -19,6 +19,7 @@
 - **User Management** — View all registered users (without passwords for security)
 - **Audit Logging** — Track all login attempts (successful and failed) with timestamps
 - **Weather Forecast** — Real-time weather information using OpenWeatherMap API with interactive city search
+- **REST API** — JSON API endpoints for external access with search, filtering, and sorting capabilities
 - **Responsive Design** — Clean, modern UI with custom CSS styling
 - **Database-Driven** — All data persisted in MySQL with parameterized queries for security
 
@@ -143,6 +144,60 @@ http://localhost:8000
 | `/users/loggedin`   | POST   | Process login with password verification  |
 | `/users/list`       | GET    | Display all registered users              |
 | `/users/audit`      | GET    | View complete audit history               |
+
+### API Routes (prefix: `/api`)
+
+| Route        | Method | Description                                                 |
+| ------------ | ------ | ----------------------------------------------------------- |
+| `/api/books` | GET    | Return all books in JSON format (supports query parameters) |
+
+**Query Parameters for `/api/books`:**
+
+| Parameter   | Type   | Description                                  | Example                   |
+| ----------- | ------ | -------------------------------------------- | ------------------------- |
+| `search`    | string | Filter books by name containing this keyword | `/api/books?search=world` |
+| `minprice`  | number | Filter books with price >= this value        | `/api/books?minprice=5`   |
+| `max_price` | number | Filter books with price <= this value        | `/api/books?max_price=10` |
+| `sort`      | string | Sort results by 'name' or 'price'            | `/api/books?sort=name`    |
+
+**Example API Calls:**
+
+```bash
+# Get all books
+curl http://localhost:8000/api/books
+
+# Search for books containing "world"
+curl http://localhost:8000/api/books?search=world
+
+# Get books priced between £5 and £10
+curl http://localhost:8000/api/books?minprice=5&max_price=10
+
+# Get all books sorted by name
+curl http://localhost:8000/api/books?sort=name
+
+# Get all books sorted by price
+curl http://localhost:8000/api/books?sort=price
+
+# Combined: Search for "farm", price between 10-20, sorted by price
+curl http://localhost:8000/api/books?search=farm&minprice=10&max_price=20&sort=price
+```
+
+**Response Format:**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Brighton Rock",
+    "price": "20.25"
+  },
+  {
+    "id": 2,
+    "name": "Brave New World",
+    "price": "25.00"
+  }
+]
+```
 
 ---
 
@@ -689,7 +744,218 @@ Possible improvements to the weather feature:
 
 ---
 
-## 🐛 Troubleshooting
+## � REST API
+
+### Overview
+
+The application provides a RESTful API that allows external developers to access bookshop data programmatically. The API returns data in JSON format, making it easy to integrate with other applications, mobile apps, or third-party services.
+
+### Key Features
+
+- **Machine-Readable Format**: All responses in JSON
+- **Search Functionality**: Filter books by keyword
+- **Price Filtering**: Get books within a specific price range
+- **Sorting**: Order results by name or price
+- **No Authentication Required**: Public API accessible to all (as per lab requirements)
+
+### API Endpoint
+
+**Base URL**: `http://localhost:8000/api`
+
+**Endpoint**: `GET /api/books`
+
+Returns a list of books from the database in JSON format.
+
+### Query Parameters
+
+All parameters are optional and can be combined:
+
+| Parameter   | Type   | Description                           | Example Value |
+| ----------- | ------ | ------------------------------------- | ------------- |
+| `search`    | string | Filter by name (case-insensitive)     | `world`       |
+| `minprice`  | number | Minimum price (inclusive)             | `5`           |
+| `max_price` | number | Maximum price (inclusive)             | `10`          |
+| `sort`      | string | Sort by 'name' or 'price' (ascending) | `name`        |
+
+### Usage Examples
+
+**1. Get All Books**
+
+```bash
+GET /api/books
+```
+
+**Response:**
+
+```json
+[
+  { "id": 1, "name": "Brighton Rock", "price": "20.25" },
+  { "id": 2, "name": "Brave New World", "price": "25.00" },
+  { "id": 3, "name": "Animal Farm", "price": "12.99" }
+]
+```
+
+**2. Search for Books**
+
+```bash
+GET /api/books?search=world
+```
+
+**Response:** Returns books containing "world" in the name
+
+**3. Filter by Price Range**
+
+```bash
+GET /api/books?minprice=5&max_price=10
+```
+
+**Response:** Returns books priced between £5 and £10
+
+**4. Sort Results**
+
+```bash
+# Sort alphabetically by name
+GET /api/books?sort=name
+
+# Sort by price (low to high)
+GET /api/books?sort=price
+```
+
+**5. Combine Multiple Parameters**
+
+```bash
+GET /api/books?search=farm&minprice=10&max_price=20&sort=price
+```
+
+**Response:** Books containing "farm", priced £10-£20, sorted by price
+
+### Implementation Details
+
+The API is implemented in `/routes/api.js` and uses:
+
+- **Express Router** for route handling
+- **Parameterized SQL Queries** to prevent SQL injection
+- **Dynamic Query Building** to handle optional parameters
+- **res.json()** to send proper JSON responses with correct Content-Type headers
+
+**Code Structure:**
+
+```javascript
+router.get("/books", function (req, res, next) {
+  let sqlquery = "SELECT * FROM books";
+  let conditions = [];
+  let params = [];
+
+  // Add filters based on query parameters
+  if (req.query.search) {
+    conditions.push("name LIKE ?");
+    params.push("%" + req.query.search + "%");
+  }
+
+  // Execute query and return JSON
+  db.query(sqlquery, params, (err, result) => {
+    if (err) {
+      next(err);
+    } else {
+      res.json(result); // Sends JSON with proper headers
+    }
+  });
+});
+```
+
+### Differences from Web Routes
+
+**API Route (`/api/books`)**:
+
+- Returns raw JSON data
+- No HTML rendering
+- Designed for machine consumption
+- Content-Type: `application/json`
+- No authentication required
+
+**Web Route (`/books/list`)**:
+
+- Renders HTML via EJS templates
+- Styled for human viewing
+- Includes navigation, headers, footers
+- Content-Type: `text/html`
+
+### Testing the API
+
+**Using cURL (Command Line)**:
+
+```bash
+# Basic request
+curl http://localhost:8000/api/books
+
+# With search parameter
+curl "http://localhost:8000/api/books?search=world"
+
+# Multiple parameters (use quotes)
+curl "http://localhost:8000/api/books?minprice=5&max_price=15&sort=name"
+
+# Pretty-print JSON (with jq)
+curl -s http://localhost:8000/api/books | jq .
+```
+
+**Using Browser**:
+Simply navigate to:
+
+- `http://localhost:8000/api/books`
+- `http://localhost:8000/api/books?search=world`
+- `http://localhost:8000/api/books?sort=price`
+
+**Using JavaScript (fetch)**:
+
+```javascript
+// Get all books
+fetch("http://localhost:8000/api/books")
+  .then((response) => response.json())
+  .then((data) => console.log(data));
+
+// Search with parameters
+fetch("http://localhost:8000/api/books?search=world&sort=price")
+  .then((response) => response.json())
+  .then((data) => console.log(data));
+```
+
+**Using Postman or Thunder Client**:
+Create a GET request to `http://localhost:8000/api/books` and add query parameters as needed.
+
+### Security Considerations
+
+1. **SQL Injection Protection**: Uses parameterized queries with `?` placeholders
+2. **No Authentication**: API is publicly accessible (as specified in lab requirements)
+3. **Read-Only**: Only GET requests supported (no POST/PUT/DELETE)
+4. **No Rate Limiting**: Currently unlimited requests (consider adding in production)
+
+### Extension Ideas
+
+The current API can be extended with:
+
+- POST `/api/books` - Add new books
+- GET `/api/books/:id` - Get a single book by ID
+- PUT `/api/books/:id` - Update book details
+- DELETE `/api/books/:id` - Remove a book
+- Authentication with API keys
+- Rate limiting to prevent abuse
+- Pagination for large result sets
+- Additional filters (author, genre, ISBN)
+
+### Use Cases
+
+This API enables developers to:
+
+- Build mobile apps that display book inventory
+- Create price comparison tools
+- Integrate with e-commerce platforms
+- Generate reports and analytics
+- Sync data with other systems
+- Build third-party widgets or plugins
+
+---
+
+## �🐛 Troubleshooting
 
 ### Database Connection Error
 
