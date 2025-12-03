@@ -7,9 +7,12 @@
  * - User registration
  * - Book addition functionality
  * - User logout
+ * - Weather forecast
  *
  * All routes are attached directly to the Express app instance
  */
+
+const request = require("request");
 
 /**
  * Middleware: redirectLogin
@@ -71,6 +74,60 @@ module.exports = function (app, shopData) {
    */
   app.get("/register", function (req, res) {
     res.render("register.ejs", { shopData: shopData });
+  });
+
+  /**
+   * Route: Weather Forecast Form (/weather)
+   * Method: GET
+   * Purpose: Display weather forecast form where users can enter a city name
+   */
+  app.get("/weather", function (req, res) {
+    res.render("weather.ejs", { shopData: shopData });
+  });
+
+  /**
+   * Route: Weather Forecast Results (/weather/results)
+   * Method: GET
+   * Purpose: Fetch and display weather data from OpenWeatherMap API
+   * Query Parameter: city - The name of the city to get weather for
+   * API: OpenWeatherMap Current Weather API
+   * Error Handling: Checks for undefined data and displays appropriate messages
+   */
+  app.get("/weather/results", function (req, res) {
+    const apiKey = process.env.WEATHER_API_KEY;
+    const city = req.query.city || "London";
+    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+
+    request(url, function (err, response, body) {
+      if (err) {
+        next(err);
+      } else {
+        var weather = JSON.parse(body);
+
+        // Error handling: Check if weather data is valid
+        if (weather !== undefined && weather.main !== undefined) {
+          var wmsg =
+            "It is " +
+            weather.main.temp +
+            " degrees in " +
+            weather.name +
+            "! <br>" +
+            "The humidity now is: " +
+            weather.main.humidity +
+            "% <br>" +
+            "Wind speed: " +
+            weather.wind.speed +
+            " m/s <br>" +
+            "Weather description: " +
+            weather.weather[0].description;
+          res.send(wmsg);
+        } else {
+          res.send(
+            "No data found for city: " + city + ". Please try another city."
+          );
+        }
+      }
+    });
   });
 
   // ==================== POST Routes ====================
