@@ -51,3 +51,31 @@ CREATE USER IF NOT EXISTS 'berties_books_app'@'localhost' IDENTIFIED BY 'qwertyu
  * This allows the app to SELECT, INSERT, UPDATE, DELETE data
  */
 GRANT ALL PRIVILEGES ON myBookshop.* TO 'berties_books_app'@'localhost';
+
+
+-- Stores registered user accounts with secure password hashing
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    hashedPassword VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_username (username)
+);
+
+-- ==================== Audit Log Table ====================
+-- Tracks all login attempts for security auditing
+CREATE TABLE IF NOT EXISTS audit_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    success BOOLEAN NOT NULL,
+    message VARCHAR(255),
+    timestamp DATETIME NOT NULL,
+    INDEX idx_username (username),
+    INDEX idx_timestamp (timestamp)
+);
+
+-- Display confirmation message
+SELECT 'Tables created successfully!' AS status;
